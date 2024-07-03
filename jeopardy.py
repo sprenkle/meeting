@@ -10,7 +10,7 @@ class Jeopardy:
         self.found_second = False
         self.state = 0 # 0 = first, 1 = second, 2 = rest for statemachine
         self.order = []
-        self.ring.Clear()
+        self.ring.clear()
         self.position_state.clear()
 
     def _show_all(self):
@@ -22,28 +22,11 @@ class Jeopardy:
             print(f'self.order={self.order} len={len(self.order)}')
             if len(self.order) > 1: # Check if we have more than one button in the order
                 remove =  self.order.pop(0)
-                print(f'remove={bin(remove)} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
-                self.first = self.first & ~remove
-                self.second = self.second & ~remove
-                self.rest = self.rest & ~remove
-
-                print(f'Post remove button={bin(remove)} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
 
                 next = self.order[0]
 
-                # Moving the next button to the first group
-                if next & self.first:
-                    pass
-                elif next & self.second:
-                    self.second = self.second & ~next
-                    self.first = self.first | next
-
-                    if len(self.order) > 1:
-                        new_second = self.order[1]
-                        if new_second & self.rest:
-                            self.rest = self.rest & ~new_second
-                            self.second = self.second | new_second
-                        
+                self.position_state.remove(next)
+                self.position_state.promote(next)                        
                     
                 # self.second, btn = self._remove(self.second)
                 # print(f'Move up from second button={btn} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
@@ -69,7 +52,7 @@ class Jeopardy:
                 self.clear()
                 return # button is command just return
 
-        input = input & ~(self.first | self.second | self.rest)
+        input = input & self.position_state.input_mask()
 
         if input == 0:
             return
@@ -80,24 +63,23 @@ class Jeopardy:
 
         for button in button_list:
             self.order.append(button)
-            print(f'Adding to order button={bin(button)} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
+            print(f'Adding to order button={bin(button)}')
 
       
         if self.state == 0:
-            # print(f'Stage = 0 input = {input}')
-            self.first = input
+            print(f'Stage = 0 input = {input}')
+            self.position_state.first = input
             self.state = 1
         
         elif self.state == 1:
-            # print(f'Stage = 1 input = {input}')
-            self.second =  input  & ~self.first
+            print(f'Stage = 1 input = {input}')
+            self.position_state.second =  input  & ~self.position_state.first
             self.state = 2
 
         else:
             print(f'Stage = 2 input = {input}  stage = {self.state}')
-            self.rest = (input | self.rest) & ~(self.first | self.second)
+            self.position_state.rest = (input | self.position_state.rest) & ~(self.position_state.first | self.position_state.second)
 
-        background = 0b1111_1111_1111_1111 & ~(self.first | self.second | self.rest)
         self._show_all()
 
         
@@ -131,6 +113,11 @@ class Jeopardy:
 
 if __name__ == '__main__':
     from consolering import ConsoleRing
-    jeopardy = Jeopardy(ConsoleRing())
+    from positionstate import PositionState
+
+    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)   
+    ring = ConsoleRing()
+
+    jeopardy = Jeopardy(ring, position_state)
     jeopardy.processInput(0b10)
     jeopardy.processInput(0b100)

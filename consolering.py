@@ -22,10 +22,11 @@ class ConsoleRing():
         self.ar = "****************"
 
     def show(self, position_state):
-        self.set(0b1111_1111_1111_1111, position_state.WHITE)
-        self.set(position_state.first, position_state.GREEN)
-        self.set(position_state.second, position_state.YELLOW)
-        self.set(position_state.rest, position_state.RED)
+        if position_state.first:
+            self.set(0b1111_1111_1111_1111, position_state.background_color)
+            self.set(position_state.first, position_state.first_color)
+            self.set(position_state.second, position_state.second_color)
+            self.set(position_state.rest, position_state.rest_color)
 
         print(self.ar)
 
@@ -35,7 +36,7 @@ class ConsoleRing():
     #     self.show()
 
     def set(self, buttons, color):
-        print(f'buttons={buttons} color={color}')
+        # print(f'buttons={buttons} color={color}')
         for i in range(16):
             if (1 << i) & buttons:
                 self.ar = self.ar[:i] + color + self.ar[i+1:]
@@ -55,4 +56,9 @@ if __name__ == '__main__':
     position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)
 
     consoleRing.clear()
+    consoleRing.show(position_state)
+
+    position_state.first = 0b1000000
+    position_state.second = 0b100
+    position_state.rest = 0b1000
     consoleRing.show(position_state)
