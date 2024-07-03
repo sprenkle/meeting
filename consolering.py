@@ -1,14 +1,14 @@
 import array, time
 
 class ConsoleRing():
-    BLACK = (0, 0, 0)
-    RED = (128, 0, 0)
-    YELLOW = (128, 75, 0)
-    GREEN = (0, 128, 0)
-    CYAN = (0, 255, 255)
-    BLUE = (0, 0, 255)
-    PURPLE = (180, 0, 255)
-    WHITE = (8, 8, 8)
+    BLACK = '*'
+    RED = 'R'
+    YELLOW = 'Y'
+    GREEN = 'G'
+    CYAN = 'C'
+    BLUE = 'B'
+    PURPLE = 'P'
+    WHITE = '-'
     COLORS = (BLACK, RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE)
 
     def __init__(self):
@@ -16,41 +16,43 @@ class ConsoleRing():
         # Create the StateMachine with the ws2812 program, outputting on Pin(23).ws2812
         # Start the StateMachine, it will wait for data on its FIFO.
         # Display a pattern on the LEDs via an array of LED RGB values.
-        self.ar = array.array("I", [0 for _ in range(self.NUM_LEDS)])
-        for i in range(0, len(self.ar)):
-            self.set(i, ConsoleRing.BLACK)
+        self.ar = "****************"
 
     def clear(self):
-        for i in range(0, 32):
-            self.set(i, ConsoleRing.BLACK)
+        self.ar = "****************"
 
-    def show(self):
-        dimmer_ar = array.array("I", [0 for _ in range(self.NUM_LEDS)])
-        for i,c in enumerate(self.ar):
-            r = int(((c >> 8) & 0xFF) * self.brightness)
-            g = int(((c >> 16) & 0xFF) * self.brightness)
-            b = int((c & 0xFF) * self.brightness)
-            dimmer_ar[i] = (g<<16) + (r<<8) + b
-        self.sm.put(dimmer_ar, 8)
-        time.sleep(.00001)
+    def show(self, position_state):
+        self.set(0b1111_1111_1111_1111, position_state.WHITE)
+        self.set(position_state.first, position_state.GREEN)
+        self.set(position_state.second, position_state.YELLOW)
+        self.set(position_state.rest, position_state.RED)
 
-    def set(self, i, color):
-        self.ar[i] = (color[1]<<16) + (color[0]<<8) + color[2]
+        print(self.ar)
+
+    # def show(self, color):
+    #     for i in range(16):
+    #         self.set(i, color)
+    #     self.show()
+
+    def set(self, buttons, color):
+        print(f'buttons={buttons} color={color}')
+        for i in range(16):
+            if (1 << i) & buttons:
+                self.ar = self.ar[:i] + color + self.ar[i+1:]
 
         
-        
+if __name__ == '__main__': 
+    from positionstate import PositionState       
+    consoleRing = ConsoleRing()
+    # consoleRing.set(0b10, ConsoleRing.RED)
+    # consoleRing.show()
+    # consoleRing.set(0b100, ConsoleRing.GREEN)
+    # consoleRing.show()
+    # consoleRing.set(0b1000, ConsoleRing.YELLOW)
+    # consoleRing.show()
+    # consoleRing.set(0b10000, ConsoleRing.WHITE)
+    # consoleRing.show()
+    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)
 
-# consoleRing = ConsoleRing()
-# consoleRing.thing()
-# consoleRing.show()
-# consoleRing.set(1, ConsoleRing.RED)
-# consoleRing.show()
-# consoleRing.set(2, ConsoleRing.GREEN)
-# consoleRing.show()
-# consoleRing.set(15, ConsoleRing.YELLOW)
-# consoleRing.show()
-# consoleRing.set(10, ConsoleRing.WHITE)
-# consoleRing.show()
-
-# consoleRing.clear()
-# consoleRing.show()
+    consoleRing.clear()
+    consoleRing.show(position_state)

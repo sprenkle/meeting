@@ -1,41 +1,20 @@
-from ring import Ring
-
 class Jeopardy:
-    def __init__(self, ring):
+    def __init__(self, ring, position_state):
         self.ring = ring
-        self.first = 0
-        self.second = 0
-        self.rest = 0
-        self.found_first = False
-        self.found_second = False
-        self.stage = 0
-        self.order = []
-        
+        self.position_state = position_state
+        self.clear()
 
     def clear(self):
-        print('Clear')
-        self.first = 0
-        self.second = 0
-        self.rest = 0
+        self.position_state.clear()
         self.found_first = False
         self.found_second = False
-        self.stage = 0
+        self.state = 0 # 0 = first, 1 = second, 2 = rest for statemachine
         self.order = []
         self.ring.Clear()
-
-    def display(self, var):
-        value = bin(var)
-        print(value)
-        value = value[2:]
-        for i in range(16 - len(value)):
-            value = "0" + value
-        print(f'{value[0:4]} {value[4:8]} {value[8:12]} {value[12:16]}')
+        self.position_state.clear()
 
     def _show_all(self):
-        self.ring.show(0b1111_1111_1111_1111, self.ring.WHITE)
-        self.ring.show(self.first, self.ring.GREEN)
-        self.ring.show(self.second, self.ring.YELLOW)
-        self.ring.show(self.rest, self.ring.RED)
+        self.ring.show(self.position_state)
 
     def processInput(self, input):
         if input & 0b1:
@@ -104,22 +83,23 @@ class Jeopardy:
             print(f'Adding to order button={bin(button)} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
 
       
-        if self.stage == 0:
+        if self.state == 0:
             # print(f'Stage = 0 input = {input}')
             self.first = input
-            self.stage = 1
+            self.state = 1
         
-        elif self.stage == 1:
+        elif self.state == 1:
             # print(f'Stage = 1 input = {input}')
             self.second =  input  & ~self.first
-            self.stage = 2
+            self.state = 2
 
         else:
-            print(f'Stage = 2 input = {input}  stage = {self.stage}')
+            print(f'Stage = 2 input = {input}  stage = {self.state}')
             self.rest = (input | self.rest) & ~(self.first | self.second)
 
         background = 0b1111_1111_1111_1111 & ~(self.first | self.second | self.rest)
-        self.ring.show()
+        self._show_all()
+
         
     def _button_list(self, buttons):
         button_list = []
@@ -149,19 +129,8 @@ class Jeopardy:
         return f'Jeperody: {1 + 1} elf.date, self.time, self.location'
 
 
-# if __name__ == "__main__":
-#     from consolering import ConsoleRing
-
-#     consoleRing = ConsoleRing()
-#     consoleRing.show()
-#     consoleRing.set(1, Ring.RED)
-#     consoleRing.show()
-#     consoleRing.set(2, Ring.GREEN)
-#     consoleRing.show()
-#     consoleRing.set(15, Ring.YELLOW)
-#     consoleRing.show()
-#     consoleRing.set(10, Ring.WHITE)
-#     consoleRing.show()
-
-#     consoleRing.clear()
-#     consoleRing.show()
+if __name__ == '__main__':
+    from consolering import ConsoleRing
+    jeopardy = Jeopardy(ConsoleRing())
+    jeopardy.processInput(0b10)
+    jeopardy.processInput(0b100)
