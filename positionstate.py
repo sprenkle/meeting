@@ -17,24 +17,36 @@ class PositionState:
         self.rest = self.rest & ~remove
 
     def input_mask(self):
-        return ~(self.position_state.first | self.position_state.second | self.position_state.rest)
+        return ~(self.first | self.second | self.rest)
 
-    def promote(self, promote):
+    def promote(self, promote, new_second=0):
         # Moving the next button to the first group
-        if next & self.first:
+        if promote & self.first:
             pass
-        elif next & self.second:
-            self.second = self.second & ~next
-            self.first = self.first | next
+        elif promote & self.second:
+            self.second = self.second & ~promote
+            self.first = self.first | promote
 
-            if len(self.order) > 1:
-                new_second = self.order[1]
-                if new_second & self.rest:
-                    self.rest = self.rest & ~new_second
-                    self.second = self.second | new_second
+        if new_second & self.rest:
+            self.rest = self.rest & ~new_second
+            self.second = self.second | new_second
+
 
         
 if __name__ == '__main__': 
     from consolering import ConsoleRing
     consoleRing = ConsoleRing()
     position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)
+    position_state.first = 0b10
+    position_state.second = 0b100
+    position_state.rest = 0b1000
+
+    print(f'{bin(position_state.first)} {bin(position_state.second)} {bin(position_state.rest)}')
+    position_state.remove(0b10)
+    position_state.promote(0b100, 0b1000)
+    print(f'{bin(position_state.first)} {bin(position_state.second)} {bin(position_state.rest)}')
+    position_state.remove(0b100)
+    position_state.promote(0b1000)
+    print(f'{bin(position_state.first)} {bin(position_state.second)} {bin(position_state.rest)}')
+    position_state.remove(0b1000)
+    print(f'{bin(position_state.first)} {bin(position_state.second)} {bin(position_state.rest)}')

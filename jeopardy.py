@@ -22,34 +22,16 @@ class Jeopardy:
             print(f'self.order={self.order} len={len(self.order)}')
             if len(self.order) > 1: # Check if we have more than one button in the order
                 remove =  self.order.pop(0)
-
-                next = self.order[0]
-
-                self.position_state.remove(next)
-                self.position_state.promote(next)                        
-                    
-                # self.second, btn = self._remove(self.second)
-                # print(f'Move up from second button={btn} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
-                # if btn >= 0:
-                #     self.first = self.first | btn
-                    
-
-
-                # self.rest, btn = self._remove(self.rest)
-                # print(f'Move up from rest button={btn} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
-                # if btn >= 0:
-                #     self.second = self.second | btn
-
-                # if not self.order:
-                #     self.Clear()
-                #     return
-
-                print(f'Post remove={bin(remove)} first={bin(self.first)} second={bin(self.second)} rest={bin(self.rest)}')
-
+                promote = self.order[0]
+                promote_second = self.order[1] if len(self.order) > 1 else 0
+                self.position_state.remove(remove)
+                self.position_state.promote(promote, promote_second)                        
+                print(f'Post remove={bin(remove)} first={bin(self.position_state.first)} second={bin(self.position_state.second)} rest={bin(self.position_state.rest)}')
                 self._show_all()
                 return # button is command just return
             else:
                 self.clear()
+                self._show_all()
                 return # button is command just return
 
         input = input & self.position_state.input_mask()
@@ -92,16 +74,16 @@ class Jeopardy:
                     button_list.append(power_of_2)
         return button_list
 
-    def _remove(self, button):
-        # print(f'Remove first from button {bin(buttton)}')
-        self.first = self.first & ~button
-        self.second = self.second & ~button
-        self.rest = self.rest & ~button
-        for i in range(16):
-            if (button >> i) & 1:
-                power_of_2 = 1 << i  # Calculate 2 to the power of i using bit shifting
-                return (button & ~power_of_2, power_of_2)
-        return (button, -1)
+    # def _remove(self, button):
+    #     # print(f'Remove first from button {bin(buttton)}')
+    #     self.first = self.first & ~button
+    #     self.second = self.second & ~button
+    #     self.rest = self.rest & ~button
+    #     for i in range(16):
+    #         if (button >> i) & 1:
+    #             power_of_2 = 1 << i  # Calculate 2 to the power of i using bit shifting
+    #             return (button & ~power_of_2, power_of_2)
+    #     return (button, -1)
 
     def show(self):
         print('showing')
@@ -121,3 +103,11 @@ if __name__ == '__main__':
     jeopardy = Jeopardy(ring, position_state)
     jeopardy.processInput(0b10)
     jeopardy.processInput(0b100)
+    jeopardy.processInput(0b1000)
+    jeopardy.processInput(0b10000)
+
+    jeopardy.processInput(0b1)
+    jeopardy.processInput(0b1)
+    jeopardy.processInput(0b1)
+    jeopardy.processInput(0b1)
+    jeopardy.processInput(0b1)
