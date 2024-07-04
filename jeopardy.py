@@ -104,7 +104,7 @@ if __name__ == '__main__':
     jeopardy.processInput(0b10000)
 
     jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
     #jeopardy.processInput(0b1)
