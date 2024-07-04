@@ -67,17 +67,27 @@ class Ring:
                 self.ar[i * 2 + 1] = (color[1]<<16) + (color[0]<<8) + color[2]
 
     def show(self, position_state):
+        print(f'show {position_state.first} {bin(position_state.second)} {bin(position_state.rest)}')
+        if position_state.first == 0 :
+            print(f'clear')
+            self.set(0b1111_1111_1111_1111, Ring.BLACK)
+            self.sm.put(self.ar,8)
+            return
+        
+        other = ~(position_state.first | position_state.second | position_state.rest) 
+        self.set(other, position_state.background_color if position_state.first else Ring.BLACK)
         self.set(position_state.second, position_state.second_color)
         self.set(position_state.first, position_state.first_color)
         self.set(position_state.rest, position_state.rest_color)
         self.sm.put(self.ar,8)
+        print(f'show {bin(position_state.first)} {bin(position_state.second)} {bin(position_state.rest)} {bin(other)}')
 
 if __name__ == '__main__':
     from positionstate import PositionState
 
     ring = Ring()
     position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE)
-    position_state.first = 0b10
-    position_state.second = 0b100
-    position_state.rest = 0b1000
+    position_state.first = 1
+    position_state.second = 2
+    position_state.rest = 0
     ring.show(position_state)
