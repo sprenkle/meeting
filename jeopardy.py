@@ -10,7 +10,7 @@ class Jeopardy:
         self.found_second = False
         self.state = 0 # 0 = first, 1 = second, 2 = rest for statemachine
         self.order = []
-        self.ring.clear()
+        # self.ring.clear()
         self.position_state.clear()
 
     def _show_all(self):
@@ -94,11 +94,11 @@ class Jeopardy:
 
 
 if __name__ == '__main__':
-    from consolering import ConsoleRing
+    from ring import Ring
     from positionstate import PositionState
 
-    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)   
-    ring = ConsoleRing()
+    position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE)   
+    ring = Ring()
 
     jeopardy = Jeopardy(ring, position_state)
     jeopardy.processInput(0b10)
@@ -106,8 +106,8 @@ if __name__ == '__main__':
     jeopardy.processInput(0b1000)
     jeopardy.processInput(0b10000)
 
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)

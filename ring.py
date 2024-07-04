@@ -41,8 +41,7 @@ class Ring:
         self.sm.active(1)
         # Display a pattern on the LEDs via an array of LED RGB values.
         self.ar = array.array("I", [0 for _ in range(self.NUM_LEDS)])
-        for i in range(0, len(self.ar)):
-            self.set(i, Ring.BLACK)
+        self.set(0b1111_1111_1111_1111, Ring.BLACK)
         self.brightness = 0.5
         self.sm.put(self.ar,8)
 
@@ -50,17 +49,35 @@ class Ring:
         for i in range(0, 32):
             self.set(i, Ring.BLACK)
         self.sm.put(self.ar,8)
+        
 
-    def show(self):
-        dimmer_ar = array.array("I", [0 for _ in range(self.NUM_LEDS)])
-        for i,c in enumerate(self.ar):
-            r = int(((c >> 8) & 0xFF) * self.brightness)
-            g = int(((c >> 16) & 0xFF) * self.brightness)
-            b = int((c & 0xFF) * self.brightness)
-            dimmer_ar[i] = (g<<16) + (r<<8) + b
-        self.sm.put(dimmer_ar, 8)
-        time.sleep(.00001)
 
-    def set(self, i, color):
-        self.ar[i] = (color[1]<<16) + (color[0]<<8) + color[2]
+    #         r = int(((c >> 8) & 0xFF) * self.brightness)
+    #         g = int(((c >> 16) & 0xFF) * self.brightness)
+    #         b = int((c & 0xFF) * self.brightness)
+    #         dimmer_ar[i] = (g<<16) + (r<<8) + b
+    #     self.sm.put(dimmer_ar, 8)
+    #     time.sleep(.00001)
 
+
+    def set(self, buttons, color):
+        for i in range(16):
+            if (1 << i) & buttons:
+                self.ar[i * 2] = (color[1]<<16) + (color[0]<<8) + color[2]
+                self.ar[i * 2 + 1] = (color[1]<<16) + (color[0]<<8) + color[2]
+
+    def show(self, position_state):
+        self.set(position_state.second, position_state.second_color)
+        self.set(position_state.first, position_state.first_color)
+        self.set(position_state.rest, position_state.rest_color)
+        self.sm.put(self.ar,8)
+
+if __name__ == '__main__':
+    from positionstate import PositionState
+
+    ring = Ring()
+    position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE)
+    position_state.first = 0b10
+    position_state.second = 0b100
+    position_state.rest = 0b1000
+    ring.show(position_state)
