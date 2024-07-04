@@ -64,6 +64,8 @@ def display(var):
 ring = ConsoleRing()
 jeopardy = Jeopardy(ring)
 
+long_presses = [0] * 16
+
 def base_interrupt(pio):
     value = sm_base.get()
     if value > 0:
