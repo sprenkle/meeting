@@ -4,7 +4,8 @@ from machine import Pin, lightsleep
 import rp2
 from rp2 import PIO, StateMachine, asm_pio
 from jeopardy import Jeopardy
-from consolering import ConsoleRing
+from ring import Ring
+from positionstate import PositionState
 
 @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
 def remote():
@@ -61,8 +62,9 @@ def display(var):
 
 
 
-ring = ConsoleRing()
-jeopardy = Jeopardy(ring)
+ring = Ring()
+position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE)
+jeopardy = Jeopardy(ring, position_state)
 
 long_presses = [0] * 16
 

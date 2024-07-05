@@ -10,8 +10,6 @@ class Jeopardy:
         self.found_second = False
         self.state = 0 # 0 = first, 1 = second, 2 = rest for statemachine
         self.order = []
-        self.ring.clear()
-        self.position_state.clear()
 
     def _show_all(self):
         self.ring.show(self.position_state)
@@ -46,7 +44,6 @@ class Jeopardy:
         for button in button_list:
             self.order.append(button)
             print(f'Adding to order button={bin(button)}')
-
       
         if self.state == 0:
             print(f'Stage = 0 input = {input}')
@@ -94,11 +91,11 @@ class Jeopardy:
 
 
 if __name__ == '__main__':
-    from consolering import ConsoleRing
+    from ring import Ring
     from positionstate import PositionState
 
-    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)   
-    ring = ConsoleRing()
+    position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE)   
+    ring = Ring()
 
     jeopardy = Jeopardy(ring, position_state)
     jeopardy.processInput(0b10)
@@ -108,7 +105,7 @@ if __name__ == '__main__':
     jeopardy.processInput(0b100000)
 
     jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
-    jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
+    #jeopardy.processInput(0b1)
