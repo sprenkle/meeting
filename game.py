@@ -8,7 +8,8 @@ class Game:
 
     def process_input(self, buttons):
         self.input_processor.process_input(buttons)
-        if self.input_processor.long_presses[0]:
+        
+        if self.input_processor.is_secondary_button_pressed():
             self.game = self.game + 1 if self.game < len(self.games) - 1 else 0
 
         self.games[self.game].processInput(self.input_processor)
