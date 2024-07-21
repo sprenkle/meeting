@@ -43,24 +43,25 @@ def base():
     set(pins, 0)
      
     # Pull in bits
-    nop()[6]
     label("next_bit")
+    nop()[6]
     in_(pins, 1)
     jmp(x_dec, "next_bit")[6]
-    irq(block, rel(0))
+    irq(noblock, rel(0))
     wrap()
 
-ring = Ring()
-position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE, Ring.BLACK)
-jeopardy = Jeopardy(ring, position_state)
 
-long_presses = [0] * 16
 
+
+old_value = -1
 def base_interrupt(pio):
+    global old_value
     value = sm_base.get()
     # if value > 0:
     #     jeopardy.processInput(value) 
-    print(f'interupt = {bin(value)}')
+    if old_value != value:
+        print(f'interupt = {bin(value)}')
+        old_value = value
     # else:
     #     print(f'irq hit zero1')
     #rp2.PIO(0).irq(lambda pio:  base_interrupt())
@@ -69,25 +70,22 @@ def base_interrupt(pio):
 
 print("Start")
 
-sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(15), in_base=Pin(14))
-# sm_remote = StateMachine(4, remote, freq=8000000, set_base=Pin(1), in_base=Pin(2))
+sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
+# sm_remote = StateMachine(1, remote, freq=8000000, set_base=Pin(14), in_base=Pin(15))
 
 rp2.PIO(0).irq(lambda pio: base_interrupt(pio))
 
 # sm_remote.active(True)
 sm_base.active(True)
+ 
+start_time = time.time()  # Record the start time
 
-# sm_remote.put(1) # this is the pause count
-time.sleep(.25)    
-#rp2.PIO(0).irq(lambda pio:  base_interrupt())
-# sm_remote.put(2)  
-time.sleep(30)    
-# sm_remote.put(3)  
-while True:
-    time.sleep(30)
+while True: #(time.time() - start_time) <= 20:
+    # sm_remote.put(0b10)
+    time.sleep(.5)
 
+print('End')        
 
 # sm_remote.active(False)
 sm_base.active(False)
    
-print('End')

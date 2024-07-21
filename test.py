@@ -1,7 +1,7 @@
 from consolering import ConsoleRing
 
 consoleRing = ConsoleRing()
-consoleRing.thing()
+
 consoleRing.show()
 consoleRing.set(1, ConsoleRing.RED)
 consoleRing.show()

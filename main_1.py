@@ -68,8 +68,8 @@ def base_interrupt(pio):
 
 
 print("Start")
-
-sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(15), in_base=Pin(14))
+pin = Pin(15, Pin.IN, Pin.PULL_UP)
+sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
 # sm_remote = StateMachine(4, remote, freq=8000000, set_base=Pin(1), in_base=Pin(2))
 
 rp2.PIO(0).irq(lambda pio: base_interrupt(pio))
@@ -84,7 +84,7 @@ time.sleep(.25)
 time.sleep(30)    
 # sm_remote.put(3)  
 while True:
-    lightsleep(1000)
+    time.sleep(1)
 
 
 # sm_remote.active(False)
