@@ -67,20 +67,25 @@ class Ring:
                 self.ar[i * 2 + 1] = (color[1]<<16) + (color[0]<<8) + color[2]
 
     def show(self, position_state):
-        print(f'show {position_state.first} {bin(position_state.second)} {bin(position_state.rest)}')
+        # print('ring show')
+        # print(f'ring show {position_state.first}')
+        #print(f'show {position_state.first} {bin(position_state.second)} {bin(position_state.rest)}')
         if position_state.first == 0 :
-            print(f'clear')
+            #print(f'clear')
             self.set(0b1111_1111_1111_1111, Ring.BLACK)
             self.sm.put(self.ar,8)
             return
+
+        # print('ring show 1')
         
         other = ~(position_state.first | position_state.second | position_state.rest) 
         self.set(other, position_state.background_color if position_state.first else Ring.BLACK)
         self.set(position_state.second, position_state.second_color)
         self.set(position_state.first, position_state.first_color)
         self.set(position_state.rest, position_state.rest_color)
+        # print('ring show 2')
         self.sm.put(self.ar,8)
-        print(f'show {bin(position_state.first)} {bin(position_state.second)} {bin(position_state.rest)} {bin(other)}')
+        #print(f'show {bin(position_state.first)} {bin(position_state.second)} {bin(position_state.rest)} {bin(other)}')
 
 if __name__ == '__main__':
     from positionstate import PositionState
@@ -90,4 +95,6 @@ if __name__ == '__main__':
     position_state.first = 1
     position_state.second = 2
     position_state.rest = 0
-    ring.show(position_state)
+    for i in range(0, 3200):
+        position_state.first = random.randint(0, 0xFFFF)
+        ring.show(position_state)

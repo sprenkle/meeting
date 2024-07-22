@@ -94,7 +94,7 @@ if __name__ == '__main__':
     from ring import Ring
     from positionstate import PositionState
 
-    position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE)   
+    position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE, Ring.BLACK)   
     ring = Ring()
 
     jeopardy = Jeopardy(ring, position_state)

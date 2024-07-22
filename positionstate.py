@@ -37,7 +37,7 @@ class PositionState:
 if __name__ == '__main__': 
     from consolering import ConsoleRing
     consoleRing = ConsoleRing()
-    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)
+    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE, ConsoleRing)
     position_state.first = 0b10
     position_state.second = 0b100
     position_state.rest = 0b1000
