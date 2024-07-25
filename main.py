@@ -13,14 +13,29 @@ def base():
     wrap_target()
     set(x, 15)
     set(pins, 1)[31]
-    set(pins, 0)
+    set(pins, 0)[30]
      
     # Pull in bits
     label("next_bit")
-    nop()[10]
+    nop()[9]
+    set(pins, 1)
     in_(pins, 1)
-    jmp(x_dec, "next_bit")[10]
+    set(pins, 0)
+    jmp(x_dec, "next_bit")[9]
     irq(0)[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]    
+    nop()[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]
+    nop()[31]
     wrap()
 
 
