@@ -60,7 +60,7 @@ sm_base.active(True)
  
 start_time = time.time()  # Record the start time
 
-while (time.time() - start_time) <= 5:
+while (time.time() - start_time) <= 1500:
     # sm_remote.put(0b10)
     time.sleep(1)
 
