@@ -17,10 +17,10 @@ def base():
      
     # Pull in bits
     label("next_bit")
-    nop()[6]
+    nop()[10]
     in_(pins, 1)
-    jmp(x_dec, "next_bit")[6]
-    irq(block, rel(0))
+    jmp(x_dec, "next_bit")[10]
+    irq(0)[31]
     wrap()
 
 
@@ -39,9 +39,9 @@ def base_interrupt(pio):
     # if value > 0:
     #     jeopardy.processInput(value) 
     if old_value != value:
-        # print(f'interupt = {bin(value)}')
+        print(f'interupt = {bin(value)}')
         old_value = value
-        jeopardy.processInput(value)
+        #jeopardy.processInput(value)
         # print(position_state.first)
     # else:
     #     print(f'irq hit zero1')
@@ -51,7 +51,7 @@ def base_interrupt(pio):
 
 print("Start")
 
-sm_base   = StateMachine(1, base, freq=10000, set_base=Pin(8), in_base=Pin(12))
+sm_base   = StateMachine(1, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
 
 rp2.PIO(0).irq(lambda pio: base_interrupt(pio))
 
@@ -60,7 +60,7 @@ sm_base.active(True)
  
 start_time = time.time()  # Record the start time
 
-while (time.time() - start_time) <= 1500:
+while True: #(time.time() - start_time) <= 15:
     # sm_remote.put(0b10)
     time.sleep(1)
 

@@ -1,16 +1,12 @@
-from consolering import ConsoleRing
+from machine import Pin, lightsleep
+import time
 
-consoleRing = ConsoleRing()
 
-consoleRing.show()
-consoleRing.set(1, ConsoleRing.RED)
-consoleRing.show()
-consoleRing.set(2, ConsoleRing.GREEN)
-consoleRing.show()
-consoleRing.set(15, ConsoleRing.YELLOW)
-consoleRing.show()
-consoleRing.set(10, ConsoleRing.WHITE)
-consoleRing.show()
+pin = Pin(14, Pin.OUT)
 
-consoleRing.clear()
-consoleRing.show()
+
+while True:
+    time.sleep(.1)
+    pin.value(1)
+    time.sleep(.1)
+    pin.value(0)
