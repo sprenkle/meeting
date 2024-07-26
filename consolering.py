@@ -22,7 +22,7 @@ class ConsoleRing():
         self.ar = "****************"
 
     def show(self, position_state):
-        if position_state.first:
+        if True: #position_state.first:
             self.set(0b1111_1111_1111_1111, position_state.background_color)
             self.set(position_state.first, position_state.first_color)
             self.set(position_state.second, position_state.second_color)
@@ -53,12 +53,12 @@ if __name__ == '__main__':
     # consoleRing.show()
     # consoleRing.set(0b10000, ConsoleRing.WHITE)
     # consoleRing.show()
-    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE)
+    position_state = PositionState(ConsoleRing.YELLOW, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE, ConsoleRing.BLACK)
 
     consoleRing.clear()
     consoleRing.show(position_state)
 
-    position_state.first = 0b1000000
-    position_state.second = 0b100
-    position_state.rest = 0b1000
+    position_state.first = 0b1011000
+    # position_state.second = 0b100
+    # position_state.rest = 0b1000
     consoleRing.show(position_state)

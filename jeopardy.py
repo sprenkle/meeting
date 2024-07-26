@@ -6,6 +6,9 @@ class Jeopardy:
 
     def clear(self):
         self.position_state.clear()
+        self.position_state.first = 0
+        self.position_state.second = 0
+        self.position_state.rest = 0
         self.found_first = False
         self.found_second = False
         self.state = 0 # 0 = first, 1 = second, 2 = rest for statemachine
@@ -16,15 +19,18 @@ class Jeopardy:
 
     def processInput(self, input):
         if input & 0b1:
-            print('Button 0 pressed')
-            print(f'self.order={self.order} len={len(self.order)}')
-            if len(self.order) > 1: # Check if we have more than one button in the order
+            #print('Button 0 pressed')
+            #print(f'self.order={self.order} len={len(self.order)}')
+            if len(self.order) > 0: # Check if we have more than one button in the order
+                #print('len(self.order) > 0')
                 remove =  self.order.pop(0)
-                promote = self.order[0]
-                promote_second = self.order[1] if len(self.order) > 1 else 0
                 self.position_state.remove(remove)
-                self.position_state.promote(promote, promote_second)                        
-                print(f'Post remove={bin(remove)} first={bin(self.position_state.first)} second={bin(self.position_state.second)} rest={bin(self.position_state.rest)}')
+                if len(self.order) > 0:
+                    #print('2 len(self.order) > 0')
+                    promote = self.order[0]
+                    promote_second = self.order[1] if len(self.order) > 1 else 0
+                    self.position_state.promote(promote, promote_second)                        
+                    #print(f'Post remove={bin(remove)} first={bin(self.position_state.first)} second={bin(self.position_state.second)} rest={bin(self.position_state.rest)}')
                 self._show_all()
                 return # button is command just return
             else:
@@ -32,6 +38,9 @@ class Jeopardy:
                 self._show_all()
                 return # button is command just return
 
+        if input & 0b10:
+            return
+        
         input = input & self.position_state.input_mask()
 
         if input == 0:
@@ -39,24 +48,24 @@ class Jeopardy:
 
         button_list = self._button_list(input)
 
-        print(button_list)
+        # print(button_list)
 
         for button in button_list:
             self.order.append(button)
-            print(f'Adding to order button={bin(button)}')
+            # print(f'Adding to order button={bin(button)}')
       
         if self.state == 0:
-            print(f'Stage = 0 input = {input}')
+            # print(f'Stage = 0 input = {input}')
             self.position_state.first = input
             self.state = 1
         
         elif self.state == 1:
-            print(f'Stage = 1 input = {input}')
+            # print(f'Stage = 1 input = {input}')
             self.position_state.second =  input  & ~self.position_state.first
             self.state = 2
 
         else:
-            print(f'Stage = 2 input = {input}  stage = {self.state}')
+            # print(f'Stage = 2 input = {input}  stage = {self.state}')
             self.position_state.rest = (input | self.position_state.rest) & ~(self.position_state.first | self.position_state.second)
 
         self._show_all()
@@ -91,21 +100,21 @@ class Jeopardy:
 
 
 if __name__ == '__main__':
-    from ring import Ring
+    from consolering import ConsoleRing
     from positionstate import PositionState
 
-    position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE, Ring.BLACK)   
-    ring = Ring()
+    position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE, ConsoleRing.BLACK)   
+    ring = ConsoleRing()
 
     jeopardy = Jeopardy(ring, position_state)
     jeopardy.processInput(0b10)
     jeopardy.processInput(0b100)
-    jeopardy.processInput(0b1000)
-    jeopardy.processInput(0b10000)
-    jeopardy.processInput(0b100000)
+    # jeopardy.processInput(0b1000)
+    # jeopardy.processInput(0b10000)
+    # jeopardy.processInput(0b100000)
 
     jeopardy.processInput(0b1)
     # jeopardy.processInput(0b1)
     # jeopardy.processInput(0b1)
     # jeopardy.processInput(0b1)
-    #jeopardy.processInput(0b1)
+    # jeopardy.processInput(0b1)
