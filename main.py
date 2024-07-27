@@ -40,7 +40,7 @@ def remote():
 
     label("remote_bit")
     set(pins, 1)[5] # want pulse to be 6 long
-    # set(pins, 0)
+    set(pins, 0)
 
     wrap()
 
@@ -98,7 +98,8 @@ old_value = -1
 def base_interrupt(pio):
     global old_value, console_ring, position_state, game
     value = sm_base.get() >> 16
-    print(f'base_interrupt value = {bin(value)}')
+    if old_value != value:
+        print(f'base_interrupt value = {bin(value)}')
     if value == 0b10:
         game = 0 if game == 1 else 1
         print(f'game = {game}')
@@ -118,13 +119,13 @@ def set_remote(index):
 
 print("Start")
 
-sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(15), in_base=Pin(14))
+sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
 
 sm_remote = StateMachine(1, remote, freq=10000, set_base=Pin(14), in_base=Pin(15), jmp_pin=Pin(15))
 
 rp2.PIO(0).irq(lambda pio: base_interrupt(pio))
 
-# sm_remote.active(True)
+sm_remote.active(True)
 sm_base.active(True)
  
 start_time = time.time()  # Record the start time

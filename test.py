@@ -1,6 +1,6 @@
 from consolering import ConsoleRing
 from positionstate import PositionState
-from jeopardy import Jeopardy
+
 
 position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE, ConsoleRing.BLACK)   
 ring = ConsoleRing()
