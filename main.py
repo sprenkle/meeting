@@ -40,7 +40,7 @@ def remote():
 
     label("remote_bit")
     set(pins, 1)[5] # want pulse to be 6 long
-    set(pins, 0)
+    # set(pins, 0)
 
     wrap()
 
@@ -72,13 +72,33 @@ position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRin
 position_state.first = 0b0
 position_state.second = 0b0
 console_ring.show(position_state)
-games = [Jeopardy(console_ring, position_state), YesNo(console_ring, position_state)]
+jeopardy = Jeopardy(console_ring, position_state)
+
+# jeopardy.processInput(0b10)
+# jeopardy.processInput(0b100)
+# jeopardy.processInput(0b1000)
+# jeopardy.processInput(0b10000)
+# jeopardy.processInput(0b100000)
+
+# jeopardy.processInput(0b1)
+# jeopardy.processInput(0b1)
+# jeopardy.processInput(0b1)
+# jeopardy.processInput(0b1)
+# jeopardy.processInput(0b1)
+
+
+
+
+
+
+games = [jeopardy, YesNo(console_ring, position_state)]
 game = 0
 
 old_value = -1
 def base_interrupt(pio):
     global old_value, console_ring, position_state, game
     value = sm_base.get() >> 16
+    print(f'base_interrupt value = {bin(value)}')
     if value == 0b10:
         game = 0 if game == 1 else 1
         print(f'game = {game}')
@@ -86,49 +106,55 @@ def base_interrupt(pio):
     
     if old_value != value:
         old_value = value
-        print(f'game = {game}')
+        print(f'game = {game} value = {bin(value)}')
         games[game].processInput(value)
-    # else:
-    #     print(f'irq hit zero1')
-    #rp2.PIO(0).irq(lambda pio:  base_interrupt())
+
     
+
+
 def set_remote(index):
     sm_remote.put(index)
-    time.sleep(.1)  
+    time.sleep(.5)  
 
 print("Start")
 
-sm_base   = StateMachine(1, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
+sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(15), in_base=Pin(14))
 
-sm_remote = StateMachine(0, remote, freq=10000, set_base=Pin(14), in_base=Pin(15), jmp_pin=Pin(15))
+sm_remote = StateMachine(1, remote, freq=10000, set_base=Pin(14), in_base=Pin(15), jmp_pin=Pin(15))
 
 rp2.PIO(0).irq(lambda pio: base_interrupt(pio))
 
-sm_remote.active(True)
+# sm_remote.active(True)
 sm_base.active(True)
  
 start_time = time.time()  # Record the start time
 
 # while (time.time() - start_time) <= 1:
 #     pass
-# print('End')        
+print('End')        
+
+time.sleep(1)
+
+set_remote(2)
+set_remote(3)
+set_remote(4)
 
 
+# for i in range(2, 4):
+#     #print(i)
+#     set_remote(i)
 
-for i in range(2, 4):
-    #print(i)
-    set_remote(i)
     
-for i in range(0, 2):
-    #print(i)
-    set_remote(0)
+# for i in range(0, 2):
+#     #print(i)
+#     set_remote(0)
     
-set_remote(1)
+# set_remote(1)
 
-set_remote(0)
+# set_remote(0)
 
-set_remote(5)
-set_remote(6)
+# set_remote(5)
+# set_remote(6)
 
 time.sleep(5)
 
