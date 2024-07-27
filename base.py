@@ -40,16 +40,17 @@ old_value = -1
 def base_interrupt(pio):
     global old_value, console_ring, position_state, game
     value = sm_base.get() >> 16
-    if old_value != value:
-        print(f'base_interrupt value = {bin(value)}')
+    # if old_value != value:
+    #     print(f'base_interrupt value = {bin(value)}')
     if value == 0b10:
+        games[game].clear()
         game = 0 if game == 1 else 1
-        print(f'game = {game}')
+        # print(f'game = {game}')
         return
     
     if old_value != value:
         old_value = value
-        print(f'game = {game} value = {bin(value)}')
+        # print(f'game = {game} value = {bin(value)}')
         games[game].processInput(value)
 
 sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
