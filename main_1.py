@@ -1,93 +1,110 @@
-from machine import Pin, lightsleep
+from machine import Pin
 import rp2
-from rp2 import PIO, StateMachine, asm_pio
-from jeopardy import Jeopardy
-from ring import Ring
-from positionstate import PositionState
 import time
 
-# @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
-# def remote():
-#     #Wait for Start Bit
-#     wrap_target()  
-#     pull(block)
-#     mov(y, osr)
-#     label("wait_start_bit")
-#     set(x, 20)
-#     wait(0, pin, 0)
-#     wait(1, pin, 0)
-#     label("verify_start_bit")
-#     jmp(x_dec, "end_start_bit")
-#     jmp(pin, "verify_start_bit")
-#     jmp("wait_start_bit") # Not the start bit start again
-#     label("end_start_bit")
-#     # Wait to set my bit
-#     wait(0, pin, 0)[2]  #4, 14,  
-    
-#     label("start_bits")
-#     jmp(y_dec, "bits") 
-#     jmp("nobits")
-#     label("bits")
-#     jmp("start_bits")[6]    
-#     label("nobits")
-#     set(pins, 1)[5] # want pulse to be 5 long
-#     set(pins, 0)
-#     wrap()
 
-@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW, in_shiftdir=rp2.PIO.SHIFT_LEFT, push_thresh=16, autopush=True)
-def base():
-    # Create start bit
+# Carrier frequency 38kHz
+# Working frequency 380kHz, duty factor = 1/2
+# Pulse when irq is cleared. Space when irq is set
+@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
+def led():
+    irq(4)
     wrap_target()
-    set(x, 15)
-    set(pins, 1)[31]
-    set(pins, 0)
-     
-    # Pull in bits
-    nop()[6]
-    label("next_bit")
-    in_(pins, 1)
-    jmp(x_dec, "next_bit")[6]
-    irq(block, rel(0))
+    set(pins, 0)    [3]
+    wait(0, irq, 4)
+    set(pins, 1)    [4]
     wrap()
 
-ring = Ring()
-position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE, Ring.BLACK)
-jeopardy = Jeopardy(ring, position_state)
 
-long_presses = [0] * 16
+# Controller for IR transmitter led with NEC protocol
+# Working frequenty 50kHz
+# Data format:
+# Protocol:
+# -- Leader Code
+# ---- Pulse:  9ms
+# ---- Space:  4.5ms
+# -- Address Code (16 bit)
+# ---- Pulse:  560us
+# ---- Space:  560us for bit 0, 1690us for bit 1
+# -- Data Code (16 bit)
+# ---- Pulse:  560us
+# ---- Space:  560us for bit 0, 1690us for bit 1
+# -- Stop Bit: 560us pulse
+# -- Gap:      140ms space
+@rp2.asm_pio(out_shiftdir=rp2.PIO.SHIFT_RIGHT)
+def nec_tx():
+    wrap_target()
+    pull()
+    # Leader Code: Pulse 9ms = 20us * 25 * 18
+    set(x, 17)
+    irq(clear, 4)
+    label('leader_pulse')
+    jmp(x_dec, 'leader_pulse')  [24]
+    # Leader Code: Space 4.5ms = 20us * 25 * 9
+    set(x, 8)
+    irq(4)
+    label('leader_space')
+    jmp(x_dec, 'leader_space')  [24]
 
-def base_interrupt(pio):
-    value = sm_base.get()
-    # if value > 0:
-    #     jeopardy.processInput(value) 
-    print(f'interupt = {bin(value)}')
-    # else:
-    #     print(f'irq hit zero1')
-    #rp2.PIO(0).irq(lambda pio:  base_interrupt())
-    
+    # Address Code and Data Code
+    label('sending')
+    # Pulse 560us = 20us * 28
+    irq(clear, 4)
+    out(x, 1)       [26]
+    # Space 560us = 20us * (26 + 1 + 1) include two jmps
+    irq(4)          [25]
+    jmp(not_x, 'bit_zero')
+
+    # Space 1690us - 560us = 1130us = 20us * 57 - 10us
+    # ignore this 10 us because of frequency
+    nop()           [27]
+    nop()           [28]
+    label('bit_zero')
+    jmp(not_osre, 'sending')  # stop sending when osr is empty
+
+    # Stop Bit: Pulse 560us = 20us * 28
+    irq(clear, 4)   [27]
+
+    # Gap: Space 140ms = 20us * 28 * 5 * 25 * 2
+    irq(4)
+    set(x, 1)
+    set(y, 24)
+    label("gap")
+    nop()               [27]
+    nop()               [27]
+    nop()               [27]
+    nop()               [27]
+    jmp(y_dec, "gap")   [27]
+    set(y, 24)
+    jmp(x_dec, "gap")
+    wrap()
 
 
-print("Start")
-pin = Pin(15, Pin.IN, Pin.PULL_UP)
-sm_base   = StateMachine(0, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
-# sm_remote = StateMachine(4, remote, freq=8000000, set_base=Pin(1), in_base=Pin(2))
+class NECTransport:
+    def __init__(self, pin=14):
+        self.sm_led = rp2.StateMachine(0, led, freq=38_000 * 10, set_base=Pin(pin))
+        self.sm_ctrl = rp2.StateMachine(1, nec_tx, freq=50_000, set_base=Pin(pin))
+        self.active()
 
-rp2.PIO(0).irq(lambda pio: base_interrupt(pio))
+    def active(self):
+        self.sm_led.active(1)
+        self.sm_ctrl.active(1)
 
-# sm_remote.active(True)
-sm_base.active(True)
+    def deactive(self):
+        self.sm_led.active(0)
+        self.sm_ctrl.active(0)
 
-# sm_remote.put(1) # this is the pause count
-time.sleep(.25)    
-#rp2.PIO(0).irq(lambda pio:  base_interrupt())
-# sm_remote.put(2)  
-time.sleep(30)    
-# sm_remote.put(3)  
-while True:
-    time.sleep(1)
+    def send(self, address, command):
+        command_code = ((~command) << 8) + command if command <= 0xff else command
+        address_code = ((~address) << 8) + address if address <= 0xff else address
+        code = (command_code << 16) + address_code
+
+        self.sm_ctrl.put(code)
 
 
-# sm_remote.active(False)
-sm_base.active(False)
-   
-print('End')
+if __name__ == '__main__':
+    tx = NECTransport()
+    tx.send(0x654c, 0x41)
+    for i in range(100):
+        tx.send(0x654c, 0x41)
+        time.sleep(0.1)        
