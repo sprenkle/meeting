@@ -2,137 +2,88 @@ from machine import Pin, lightsleep
 import rp2
 from rp2 import PIO, StateMachine, asm_pio
 from jeopardy import Jeopardy
-from consolering import ConsoleRing
+from ring import Ring
 from positionstate import PositionState
-from yesno import YesNo
 import time
 
-
-@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
-def remote():
-    #Wait for Start Bit
-    wrap_target() 
-    pull(block)
-    #wrap_target() # uncomment this
-    label("wait_start_bit")
-    mov(x, osr)
-    pull(noblock)
-    
-      
-    set(y, 10) # sets timing on start bit
-
-    label("continue_start_bit") 
-    
-    jmp(pin, "verify_start_bit")
-    jmp("wait_start_bit") # Not the start bit start again
-    label("verify_start_bit")
-
-    jmp(y_dec, "continue_start_bit")
-
-    # Wait to set my bit
-    wait(0, pin, 0)[11]
-
-    label("wait_bits") 
-    jmp(x_dec, "jmp_over_bits")
-    jmp("remote_bit")
-    label("jmp_over_bits")
-    jmp("wait_bits")[21]
-
-    label("remote_bit")
-    set(pins, 1)[5] # want pulse to be 6 long
-    set(pins, 0)
-
-    wrap()
-
-
-
-@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW, in_shiftdir=rp2.PIO.SHIFT_RIGHT, push_thresh=16, pull_thresh=16, autopush=True)
+@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW, in_shiftdir=rp2.PIO.SHIFT_LEFT, push_thresh=16, autopush=False)
 def base():
     # Create start bit
     wrap_target()
-    set(x, 15)
-    set(pins, 1)[31]
-    set(pins, 0)[5]
-     
-    # Pull in bits
-    label("next_bit")
-    nop()[10]
-    in_(pins, 1)
-    jmp(x_dec, "next_bit")[10]
-    irq(0)[31]
+    set(x, 15) # this is the number of bits to check
+   
+
+    set(y, 20)
+    label("loop")
+    set(pins, 1)[1]
+    set(pins, 0)[2]
+    jmp(y_dec, "loop")
+
     nop()[31]
+    nop()[29]
+
+    label("next_bit")
+    nop()[28]
+    nop()[29]
+    in_(pins, 1)
+    nop()[30]
+    jmp(x_dec, "next_bit")[28]
+
+
+    push(block)
+    irq(0)
+
+
+    set(x, 31)
+    label("wait_bit")
+    nop()[31]
+    nop()[27]
+    jmp(x_dec, "wait_bit")[31]
+    
+    set(x, 31)
+    label("wait_bit2")
+    nop()[31]
+    nop()[27]
+    jmp(x_dec, "wait_bit2")[31]
+
+
+
     wrap()
 
+class IrBase:
+    def __init__(self, handler, receiver_pin = 15, transmitter_pin = 14) -> None:
+        self.sm_base =  StateMachine(0, base, freq=(38_000 * 6), in_base=Pin(receiver_pin), set_base=Pin(transmitter_pin))
+        self.sm_base.irq(self.pin_callback)  # Attach the IRQ handler
+        self.handler = handler
+
+    def pin_callback(self, pin):
+        self.handler(bin(self.sm_base.get()))
+        
+    def start(self):
+        self.sm_base.active(True)
+
+    def end(self):
+        self.sm_base.active(False)
+
+if __name__ == '__main__':
+    pin = Pin(29, Pin.IN, Pin.PULL_UP)
+    print(f'pin {pin.value()}')
 
 
+    def handler(sm):
+        print(f'handler {sm}')
 
-
-console_ring = ConsoleRing()
-position_state = PositionState(ConsoleRing.GREEN, ConsoleRing.YELLOW, ConsoleRing.RED, ConsoleRing.WHITE, ConsoleRing.BLACK)
-position_state.first = 0b0
-position_state.second = 0b0
-console_ring.show(position_state)
-games = [Jeopardy(console_ring, position_state), YesNo(console_ring, position_state)]
-game = 0
-
-old_value = -1
-def base_interrupt(pio):
-    global old_value, console_ring, position_state, game
-    value = sm_base.get() >> 16
-    if value == 0b10:
-        game = 0 if game == 1 else 1
-        print(f'game = {game}')
-        return
+    print('start')
+    base = IrBase(handler)
+    base.start()
     
-    if old_value != value:
-        old_value = value
-        print(f'game = {game}')
-        games[game].processInput(value)
-    # else:
-    #     print(f'irq hit zero1')
-    #rp2.PIO(0).irq(lambda pio:  base_interrupt())
+    # base.sm_base.put(16)
+    # time.sleep(1)
+    # base.sm_base.put(16)
+    while True:
+        time.sleep(1)
+    # base.sm_base.get()
+    # time.sleep(10)
     
-def set_remote(index):
-    sm_remote.put(index)
-    time.sleep(.1)  
-
-print("Start")
-
-sm_base   = StateMachine(1, base, freq=10000, set_base=Pin(14), in_base=Pin(15))
-
-sm_remote = StateMachine(0, remote, freq=10000, set_base=Pin(14), in_base=Pin(15), jmp_pin=Pin(15))
-
-rp2.PIO(0).irq(lambda pio: base_interrupt(pio))
-
-sm_remote.active(True)
-sm_base.active(True)
- 
-start_time = time.time()  # Record the start time
-
-# while (time.time() - start_time) <= 1:
-#     pass
-# print('End')        
-
-
-
-for i in range(2, 4):
-    #print(i)
-    set_remote(i)
-    
-for i in range(0, 2):
-    #print(i)
-    set_remote(0)
-    
-set_remote(1)
-
-set_remote(0)
-
-set_remote(5)
-set_remote(6)
-
-time.sleep(5)
-
-
-sm_remote.active(False)
-sm_base.active(False)
-   
+    base.end()
+    print('end')
