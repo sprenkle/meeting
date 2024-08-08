@@ -13,7 +13,7 @@ import time
 class IrRemote:
     
     def __init__(self, handler, receiver_pin = 14, transmitter_pin = 28) -> None:
-        self.sm_base =  StateMachine(0, self.pulse, freq=(38_000 * 6), in_base=Pin(receiver_pin), set_base=Pin(transmitter_pin))
+        self.sm_base = StateMachine(0, self.pulse, freq=(38_000 * 6), in_base=Pin(receiver_pin), set_base=Pin(transmitter_pin))
         self.handler = handler
         self.pin = Pin(14, Pin.IN)
         self.pin.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.pin_handler)
@@ -25,11 +25,20 @@ class IrRemote:
     def pulse():
         # Create start bit
         pull(block)
-        set(x, osr)
+        set(x, 3)
         nop()[31]
         nop()[31]
         nop()[31]
         nop()[31]
+        nop()[27]
+
+
+        label("wait_loop")
+        nop()[30]
+        nop()[30]
+        nop()[30]
+        nop()[29]
+        jmp(x_dec, "wait_loop")
 
         set(y, 10)
         label("loop")
@@ -46,7 +55,20 @@ class IrRemote:
             # print(f'pulse_length {pulse_length}') #25843
             self.start_pulse = 0
             if pulse_length > 24843 and pulse_length < 26843:
-                self.sm_base.put(16)
+                self.run_pulse()
+                
+        # 
+
+    def run_pulse(self):
+        if not self.pulse_:
+            self.sm_base.put(0)
+            #print('pulse dd')
+            # self.sm_base.active(1)  # Start the state machine
+            # self.pulse_ = True
+            # while self.sm_base.irq() == 0:
+            #     pass  # Wait for the PIO program to complete
+            # self.sm_base.active(0)  # Stop the state machine
+            # self.pulse_ = False
 
     
 if __name__ == '__main__':

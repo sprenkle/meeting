@@ -22,24 +22,24 @@ def base():
     nop()[31]
     nop()[28] # changed from 29 to 28
 
-    set(x, 15)
-    label("loop3")
-    set(y, 10)[29]
-    label("loop2")
-    set(pins, 1)[1]
-    set(pins, 0)[2]
-    jmp(y_dec, "loop2")
-    nop()[30]
-    jmp(x_dec, "loop3")
+    # set(x, 15)
+    # label("loop3")
+    # set(y, 10)[29]
+    # label("loop2")
+    # set(pins, 1)[1]
+    # set(pins, 0)[2]
+    # jmp(y_dec, "loop2")
+    # nop()[30]
+    # jmp(x_dec, "loop3")
     
 
 
-    # label("next_bit")
-    # nop()[28]
-    # nop()[29]
-    # in_(pins, 1)
-    # nop()[30]
-    # jmp(x_dec, "next_bit")[28]
+    label("next_bit")
+    nop()[28]
+    nop()[29]
+    in_(pins, 1)
+    nop()[30]
+    jmp(x_dec, "next_bit")[28]
 
 
     push(block)
@@ -85,7 +85,8 @@ if __name__ == '__main__':
     ir_base = IrBase(handler)
     ir_base.start()
     
-    time.sleep(10)
+    time.sleep(60)
     
     
     print('end')
+    ir_base.end()

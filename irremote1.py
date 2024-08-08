@@ -46,7 +46,19 @@ class IrRemote:
             # print(f'pulse_length {pulse_length}') #25843
             self.start_pulse = 0
             if pulse_length > 24843 and pulse_length < 26843:
+                self.run_pulse()
                 self.sm_base.put(16)
+        # 
+
+    def run_pulse(self):
+        if not self.pulse_:
+            print('pulse dd')
+            # self.sm_base.active(1)  # Start the state machine
+            # self.pulse_ = True
+            # while self.sm_base.irq() == 0:
+            #     pass  # Wait for the PIO program to complete
+            # self.sm_base.active(0)  # Stop the state machine
+            # self.pulse_ = False
 
     
 if __name__ == '__main__':
