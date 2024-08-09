@@ -13,16 +13,17 @@ def base():
     set(x, 15) # this is the number of bits to check
    
 
-    set(y, 20)
-    label("loop")
-    set(pins, 1)[1]
+    set(y, 20)           ; 1
+    label("loop")        ; 120
+    set(pins, 1)[1]     
     set(pins, 0)[2]
     jmp(y_dec, "loop")
 
-    nop()[31]
-    nop()[28] # changed from 29 to 28
+    nop()[31]             ; 32
+    nop()[28]             ; 28
 
-    set(x, 15)
+    set(x, 15)            ; 1
+                        ; 182             
     label("loop3")
     set(y, 10)[29]
     label("loop2")
@@ -81,11 +82,14 @@ if __name__ == '__main__':
     
     def handler(sm):
         print(f'handler {sm}')
+        # print(f'handler2 {bin(0b0111_1111_1111_1111 ^ 0b1111_1111_1111_1111)}')
 
     ir_base = IrBase(handler)
     ir_base.start()
     
-    time.sleep(10)
+    while True:
+        time.sleep(60)
     
     
     print('end')
+    ir_base.end()
