@@ -6,59 +6,42 @@ from ring import Ring
 from positionstate import PositionState
 import time
 
-@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW, in_shiftdir=rp2.PIO.SHIFT_LEFT, push_thresh=16, autopush=False)
+@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW, in_shiftdir=rp2.PIO.SHIFT_RIGHT, push_thresh=32, autopush=False)
 def base():
     # Create start bit
     wrap_target()
-    set(x, 15) # this is the number of bits to check
+    set(x, 31) # this is the number of bits to check
    
 
-    set(y, 20)           ; 1
-    label("loop")        ; 120
-    set(pins, 1)[1]     
-    set(pins, 0)[2]
-    jmp(y_dec, "loop")
-
-    nop()[31]             ; 32
-    nop()[28]             ; 28
-
-    set(x, 15)            ; 1
-                        ; 182             
-    label("loop3")
-    set(y, 10)[29]
-    label("loop2")
+    set(y, 20)
+    label("loop")
     set(pins, 1)[1]
     set(pins, 0)[2]
-    jmp(y_dec, "loop2")
-    nop()[30]
-    jmp(x_dec, "loop3")
-    
+    jmp(y_dec, "loop")  # 120 cycles
 
+    nop()[29]
+    nop()[28] 
+    set(x, 5) # 60 cycles
 
-    # label("next_bit")
-    # nop()[28]
-    # nop()[29]
-    # in_(pins, 1)
-    # nop()[30]
-    # jmp(x_dec, "next_bit")[28]
+    label("next_bit")
+    nop()[28] 
+    in_(pins, 1) 
+    nop()[28] 
+    jmp(x_dec, "next_bit") # 60 cycles
 
-
+    # DONE don't worry about what is after
     push(block)
     irq(0)
 
 
-    set(x, 31)
-    label("wait_bit")
-    nop()[31]
-    nop()[27]
-    jmp(x_dec, "wait_bit")[31]
-    
+    set(y, 2)
+    label("wait_long")
     set(x, 31)
     label("wait_bit2")
     nop()[31]
     nop()[27]
     jmp(x_dec, "wait_bit2")[31]
-
+    jmp(y_dec, "wait_long")
 
 
     wrap()
@@ -70,7 +53,7 @@ class IrBase:
         self.handler = handler
 
     def pin_callback(self, pin):
-        self.handler(bin(self.sm_base.get()))
+        self.handler(self.sm_base.get() >> 16)
         
     def start(self):
         self.sm_base.active(True)
@@ -80,9 +63,13 @@ class IrBase:
 
 if __name__ == '__main__':
     
+    def invert_unsigned(x, bit_width):
+        mask = (1 << bit_width) - 1  # Create a mask with the desired bit-width
+        return ~x & mask  # Invert the bits and apply the mask
+
+
     def handler(sm):
-        print(f'handler {sm}')
-        # print(f'handler2 {bin(0b0111_1111_1111_1111 ^ 0b1111_1111_1111_1111)}')
+        print(f'handler sm invert = {bin(sm)} or = {bin(sm ^ 0b1111_1111_1111_1111)}')
 
     ir_base = IrBase(handler)
     ir_base.start()
