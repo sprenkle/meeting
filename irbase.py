@@ -57,7 +57,7 @@ class IrBase:
         self.handler = handler
 
     def pin_callback(self, pin):
-        self.handler(self.sm_base.get() >> 16)
+        self.handler(self.sm_base.get())
         
     def start(self):
         self.sm_base.active(True)
