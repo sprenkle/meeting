@@ -6,7 +6,7 @@ from ring import Ring
 from positionstate import PositionState
 import time
 
-@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW, in_shiftdir=rp2.PIO.SHIFT_RIGHT, push_thresh=32, autopush=False)
+@rp2.asm_pio(set_init=(rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW), in_shiftdir=rp2.PIO.SHIFT_RIGHT, push_thresh=32, autopush=False)
 def base():
     # Create start bit
     wrap_target()
@@ -25,8 +25,21 @@ def base():
 
     label("next_bit")
     nop()[28] 
-    in_(pins, 1) 
-    nop()[28] 
+    #in_(pins, 1)
+    # start of in
+    mov(y, invert(pins))  
+    jmp(not_y, "y_not_one")
+    set(y, 1)
+    jmp("set_output")
+
+    label("y_not_one")
+    set(y, 0)[1]
+
+    label("set_output")
+    in_(y, 1)
+    # end of in
+
+    nop()[24] 
     jmp(x_dec, "next_bit") # 60 cycles
 
     # DONE don't worry about what is after
