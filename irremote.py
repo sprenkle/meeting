@@ -14,15 +14,36 @@ class IrRemote:
     
     def __init__(self, handler, receiver_pin = 14, transmitter_pin = 28) -> None:
         self.sm_base =  StateMachine(0, self.pulse, freq=(38_000 * 6), in_base=Pin(receiver_pin), set_base=Pin(transmitter_pin))
+        self.sm_base2 =  StateMachine(1, self.pulse2, freq=(38_000 * 6), in_base=Pin(receiver_pin), set_base=Pin(transmitter_pin))
         self.handler = handler
         self.pin = Pin(14, Pin.IN)
         self.pin.irq(trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING, handler=self.pin_handler)
         self.start_pulse = 0
         self.pulse_ = False
         self.sm_base.active(1)
+        self.sm_base2.active(1)
 
     @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
     def pulse():
+        # Create start bit
+        pull(block)
+        set(x, osr)
+        nop()[31]
+        nop()[31]
+        nop()[31]
+        nop()[31]
+
+        set(y, 10)
+        label("loop")
+        set(pins, 1)[1]
+        set(pins, 0)[2]
+        jmp(y_dec, "loop")
+
+
+
+
+    @rp2.asm_pio(set_init=rp2.PIO.OUT_LOW)
+    def pulse2():
         # Create start bit
         pull(block)
         set(x, osr)
@@ -46,7 +67,8 @@ class IrRemote:
             # print(f'pulse_length {pulse_length}') #25843
             self.start_pulse = 0
             if pulse_length > 24843 and pulse_length < 26843:
-                self.sm_base.put(16)
+                self.sm_base.put(0)
+                self.sm_base2.put(31)
 
     
 if __name__ == '__main__':

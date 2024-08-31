@@ -10,13 +10,13 @@ import time
 def base():
     # Create start bit
     wrap_target()
-    set(x, 31) # this is the number of bits to check
+    set(x, 0) # this is the number of bits to check
    
 
     set(y, 20)
     label("loop")
-    set(pins, 1)[1]
-    set(pins, 0)[2]
+    mov(pins, inverse(x))[1]
+    mov(pins, x)[2]
     jmp(y_dec, "loop")  # 120 cycles
 
     set(y, 7)
