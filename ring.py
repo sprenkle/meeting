@@ -37,7 +37,7 @@ class Ring:
         self.NUM_LEDS = 32
         self.LED_PIN = 4
         # Create the StateMachine with the ws2812 program, outputting on Pin(23).ws2812
-        self.sm = StateMachine(0, ws2812, freq=8000000, sideset_base=Pin(self.LED_PIN))#23-16
+        self.sm = StateMachine(4, ws2812, freq=8000000, sideset_base=Pin(self.LED_PIN))#23-16
         # Start the StateMachine, it will wait for data on its FIFO.
         self.sm.active(1)
         # Display a pattern on the LEDs via an array of LED RGB values.
@@ -104,7 +104,9 @@ if __name__ == '__main__':
     from positionstate import PositionState
     print('start')
     ring = Ring()
-    position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE, Ring.BLACK)
-  
-    ring.debug(0b1000_0000_0000_0000_0000_0000_1000_0001)
+
+    for i in range(0, 32):
+        ring.debug(1 << i)
+        time.sleep(0.1)
+
     print('end')

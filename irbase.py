@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     def handler(sm):
         print(f'handler sm invert = {bin(sm)} or = {bin(sm ^ 0b1111_1111_1111_1111_1111_1111_1111_1111)}')
-        #ring.debug(sm)
+        ring.debug(sm)
 
     ir_base = IrBase(handler)
     ir_base.start()
