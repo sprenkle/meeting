@@ -34,7 +34,7 @@ class Ring:
     COLORS = (BLACK, RED, YELLOW, GREEN, CYAN, BLUE, PURPLE, WHITE)
 
     def __init__(self):
-        self.NUM_LEDS = 16
+        self.NUM_LEDS = 32
         self.LED_PIN = 4
         # Create the StateMachine with the ws2812 program, outputting on Pin(23).ws2812
         self.sm = StateMachine(0, ws2812, freq=8000000, sideset_base=Pin(self.LED_PIN))#23-16
@@ -68,6 +68,17 @@ class Ring:
                 # self.ar[i * 2] = (color[1]<<16) + (color[0]<<8) + color[2]
                 # self.ar[i * 2 + 1] = (color[1]<<16) + (color[0]<<8) + color[2]
 
+    def debug(self, buttons):
+            for i in range(32):
+                if (1 << i) & buttons:
+                    self.ar[i] = (Ring.BLUE[1]<<16) + (Ring.BLUE[0]<<8) + Ring.BLUE[2]
+                    # self.ar[i * 2] = (color[1]<<16) + (color[0]<<8) + color[2]
+                    # self.ar[i * 2 + 1] = (color[1]<<16) + (color[0]<<8) + color[2]
+                else:
+                    self.ar[i] = 0
+            self.sm.put(self.ar,8)
+
+
     def show(self, position_state):
         # print('ring show')
         # print(f'ring show {position_state.first}')
@@ -94,11 +105,6 @@ if __name__ == '__main__':
     print('start')
     ring = Ring()
     position_state = PositionState(Ring.GREEN, Ring.YELLOW, Ring.RED, Ring.WHITE, Ring.BLACK)
-    position_state.first = 1
-    position_state.second = 2
-    position_state.rest = 0
-    for i in range(0, 32):
-        position_state.first = random.randint(0, 0xFFFF)
-        ring.show(position_state)
-        time.sleep(1)
+  
+    ring.debug(0b1000_0000_0000_0000_0000_0000_1000_0001)
     print('end')
