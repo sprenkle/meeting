@@ -6,7 +6,7 @@ from ring import Ring
 from positionstate import PositionState
 import time
 
-@rp2.asm_pio(set_init=rp2.PIO.OUT_LOW, in_shiftdir=rp2.PIO.SHIFT_RIGHT, push_thresh=32, autopush=False)
+@rp2.asm_pio(out_init=(rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW), set_init=(rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW,rp2.PIO.OUT_LOW), in_shiftdir=rp2.PIO.SHIFT_RIGHT, push_thresh=32, autopush=False)
 def base():
     # Create start bit
     wrap_target()
@@ -15,7 +15,7 @@ def base():
 
     set(y, 20)
     label("loop")
-    mov(pins, inverse(x))[1]
+    mov(pins, invert(x))[1]
     mov(pins, x)[2]
     jmp(y_dec, "loop")  # 120 cycles
 
@@ -51,8 +51,8 @@ def base():
     wrap()
 
 class IrBase:
-    def __init__(self, handler, receiver_pin = 15, transmitter_pin = 14) -> None:
-        self.sm_base =  StateMachine(0, base, freq=(38_000 * 6), in_base=Pin(receiver_pin), set_base=Pin(transmitter_pin))
+    def __init__(self, handler, receiver_pin = 7, transmitter_pin = 15) -> None:
+        self.sm_base =  StateMachine(0, base, freq=(38_000 * 6), out_base=Pin(transmitter_pin), in_base=Pin(receiver_pin), set_base=Pin(transmitter_pin))
         self.sm_base.irq(self.pin_callback)  # Attach the IRQ handler
         self.handler = handler
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     ir_base.start()
     
     while True:
-        time.sleep(60)
+       time.sleep(60)
     
     
     print('end')

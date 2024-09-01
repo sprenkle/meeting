@@ -35,7 +35,7 @@ class Ring:
 
     def __init__(self):
         self.NUM_LEDS = 16
-        self.LED_PIN = 6
+        self.LED_PIN = 4
         # Create the StateMachine with the ws2812 program, outputting on Pin(23).ws2812
         self.sm = StateMachine(0, ws2812, freq=8000000, sideset_base=Pin(self.LED_PIN))#23-16
         # Start the StateMachine, it will wait for data on its FIFO.
